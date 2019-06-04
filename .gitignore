@@ -27,4 +27,3 @@ yarn-error.log*
 target
 .classpath
 meiguotong.iml
-src/main/webapp/WEB-INF/lib
