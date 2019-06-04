@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeeplus.modules.meiguotong.mapper.comarticle.ComArticleMapper">
+    
+	<sql id="comArticleColumns">
+		a.id AS "id",
+		a.title AS "title",
+		a.link AS "link",
+		a.update_by AS "updateBy.id",
+		a.update_date AS "updateDate",
+		a.create_date AS "createDate",
+		a.create_by AS "createBy.id",
+		a.del_flag AS "delFlag",
+		a.del_date AS "delDate",
+		a.del_by AS "delBy",
+		a.language_id AS "languageId",
+		a.img_url AS "imgUrl",
+		a.content AS "content",
+		a.type AS "type",
+		a.status AS "status"
+	</sql>
+	
+	<sql id="comArticleJoins">
+		
+	</sql>
+	
+	<!-- 获取资讯列表 -->
+    <select id="getComArticleList" resultType="ComArticle" >
+		SELECT 
+			<include refid="comArticleColumns"/>
+		FROM com_article a
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+			<if test="type != null">
+			 	AND a.type = #{type}
+			</if>
+			<if test="status != null">
+			 	AND a.status = #{status}
+			</if>
+			<if test="ids != null and ids != '' ">
+				AND FIND_IN_SET(a.id,#{ids}) > 0
+			</if>
+		</where>
+		ORDER BY a.update_date DESC
+    </select>
+    
+	<select id="get" resultType="ComArticle" >
+		SELECT 
+			<include refid="comArticleColumns"/>
+		FROM com_article a
+		<include refid="comArticleJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	<!-- 获取关于我们信息接口 -->
+	<select id="getArticle" resultType="ComArticle" >
+		SELECT 
+			a.title AS "title",
+			a.content AS "content"
+		FROM com_article a
+		where a.del_flag = 0 and  a.type=3 and a.status=1 
+			and a.language_id=#{languageId}
+	
+	</select>
+	
+	<select id="findUsList" resultType="ComArticle" >
+		SELECT 
+			<include refid="comArticleColumns"/>
+		FROM com_article a
+		<include refid="comArticleJoins"/>
+		<where>
+			a.del_flag = 0 and  a.type=3
+			${dataScope}
+			<if test="languageId != null and languageId != ''">
+				AND a.language_id = #{languageId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				
+			</otherwise>
+		</choose>
+	</select>
+	<select id="findList" resultType="ComArticle" >
+		SELECT 
+			<include refid="comArticleColumns"/>
+		FROM com_article a
+		<include refid="comArticleJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL} and  a.type=1
+			${dataScope}
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+			<if test="languageId != null and languageId != ''">
+				AND a.language_id = #{languageId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	<!--    资讯管理页面 -->
+		<select id="information" resultType="ComArticle" >
+		SELECT 
+			<include refid="comArticleColumns"/>
+		FROM com_article a
+		<include refid="comArticleJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL} and  a.type=2
+			${dataScope}
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+			<if test="languageId != null and languageId != ''">
+				AND a.language_id = #{languageId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 网站文章列表接口 -->
+		<select id="findComArticleList" resultType="ComArticle" >
+		SELECT 
+		a.id AS "id",
+		a.title AS "title",
+		a.link AS "link",
+		a.create_date AS "createDate",
+		a.language_id AS "languageId",
+		a.img_url AS "imgUrl",
+		a.content AS "content"
+		FROM com_article a
+		<where>
+			a.del_flag = 0 and  a.type=#{type}
+			${dataScope}
+			<if test="title != null and title != ''">
+				AND a.title LIKE 
+					<if test="dbName == 'oracle'">'%'||#{title}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{title}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{title},'%')</if>
+			</if>
+			<if test="languageId != null and languageId != ''">
+				AND a.language_id LIKE 
+					<if test="dbName == 'oracle'">'%'||#{languageId}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{languageId}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{languageId},'%')</if>
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+		
+	<!-- 获取文章详情接口 -->
+	<select id="getComArticle" resultType="ComArticle">
+	SELECT 
+		a.id AS "id",
+		a.title AS "title",
+		a.link AS "link",
+		a.create_date AS "createDate",
+		a.language_id AS "languageId",
+		a.img_url AS "imgUrl",
+		a.content AS "content"
+		FROM com_article a
+		where 
+		a.type=#{type} and a.id=#{id} and a.del_flag=0
+	</select>
+	 <!--   获取公司新闻列表接口 -->
+		<select id="findCompanyNewList" resultType="ComArticle" >
+		SELECT 
+		a.id AS "id",
+		a.title AS "title",
+		a.link AS "link",
+		a.create_date AS "createDate",
+		a.language_id AS "languageId",
+		a.img_url AS "imgUrl",
+		a.content AS "content"
+		FROM com_article a
+		where
+			a.del_flag = 0 and  a.type=#{type}
+			</select>
+	<select id="findAllList" resultType="ComArticle" >
+		SELECT 
+			<include refid="comArticleColumns"/>
+		FROM com_article a
+		<include refid="comArticleJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			${dataScope}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.update_date DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO com_article(
+			title,
+			link,
+			update_by,
+			update_date,
+			create_date,
+			create_by,
+			del_flag,
+			del_date,
+			del_by,
+			language_id,
+			img_url,
+			content,
+			type,
+			status
+		) VALUES (
+			#{title},
+			#{link},
+			#{updateBy.id},
+			#{updateDate},
+			#{createDate},
+			#{createBy.id},
+			#{delFlag},
+			#{delDate},
+			#{delBy},
+			#{languageId},
+			#{imgUrl},
+			#{content},
+			#{type},
+			1
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE com_article SET 	
+			title = #{title},
+			link = #{link},
+			update_by = #{updateBy.id},
+			update_date = #{updateDate},
+			del_date = #{delDate},
+			del_by = #{delBy},
+			language_id = #{languageId},
+			img_url = #{imgUrl},
+			content = #{content},
+			type = #{type},
+			status=#{status}
+		WHERE id = #{id}
+	</update>
+	<update id="status">
+	UPDATE com_article SET
+	update_by = #{updateBy.id},
+	update_date = #{updateDate},
+	status=#{status}
+	WHERE id = #{id}
+	</update>
+	
+	<!--物理删除-->
+	<update id="delete">
+		DELETE FROM com_article
+		WHERE id = #{id}
+	</update>
+	
+	<!--逻辑删除-->
+	<update id="deleteByLogic">
+		UPDATE com_article SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	
+	<!-- 根据实体名称和字段名称和字段值获取唯一记录 -->
+	<select id="findUniqueByProperty" resultType="ComArticle" statementType="STATEMENT">
+		select * FROM com_article  where ${propertyName} = '${value}'
+	</select>
+	
+	
+	<select id="findListByLanguageid" resultType="ComArticle" >
+		SELECT 
+			<include refid="comArticleColumns"/>
+		FROM com_article a
+		<include refid="comArticleJoins"/>
+		<where>
+			a.del_flag = 0 and status=1 and  a.type=1
+			${dataScope}
+			<if test="languageId != null and languageId != ''">
+				AND a.language_id = #{languageId}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				
+			</otherwise>
+		</choose>
+	</select>
+	
+</mapper>
